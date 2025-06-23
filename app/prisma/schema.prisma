@@ -1,0 +1,171 @@
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/idevr-store/app/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  orders        Order[]
+  cartItems     CartItem[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  productId   String   @unique
+  name        String
+  description String   @db.Text
+  category    String
+  platform    String
+  price       Float
+  currency    String   @default("USD")
+  tags        String[]
+  isBundle    Boolean  @default(false)
+  type        String   // "mobile" or "desktop"
+  
+  // Additional fields for desktop software
+  pricingModel String? // "Hybrid", "Subscription", "Per-User Subscription"
+  priceDetails Json?
+  
+  orderItems  OrderItem[]
+  cartItems   CartItem[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CartItem {
+  id        String @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int    @default(1)
+  
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, productId])
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  userId        String
+  status        String      @default("pending") // pending, processing, completed, cancelled
+  total         Float
+  currency      String      @default("USD")
+  
+  // Customer details
+  customerName  String
+  customerEmail String
+  
+  // Billing details
+  billingAddress Json
+  
+  // Payment details
+  paymentMethod String?
+  paymentStatus String @default("pending") // pending, paid, failed
+  
+  orderItems OrderItem[]
+  user       User        @relation(fields: [userId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float
+  
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+  
+  createdAt DateTime @default(now())
+}
+
+model ServiceInquiry {
+  id               String   @id @default(cuid())
+  name             String
+  email            String
+  company          String?
+  phone            String?
+  serviceType      String   // "custom-development", "mvp", "website", "support"
+  projectDetails   String   @db.Text
+  budget           String?
+  timeline         String?
+  additionalInfo   String?  @db.Text
+  status           String   @default("new") // new, reviewed, contacted, closed
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContactMessage {
+  id      String @id @default(cuid())
+  name    String
+  email   String
+  subject String
+  message String @db.Text
+  status  String @default("new") // new, reviewed, responded
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
