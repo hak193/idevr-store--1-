@@ -5,6 +5,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Tag } from 'lucide-react';
+import { WishlistButton } from '@/components/wishlist/wishlist-button';
 import { useCartStore } from '@/lib/cart-store';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
@@ -111,13 +112,16 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        <Button 
-          onClick={handleAddToCart}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          <ShoppingCart className="h-4 w-4 mr-2" />
-          Add to Cart
-        </Button>
+        <div className="flex items-center space-x-2">
+          <WishlistButton productId={product.id} />
+          <Button 
+            onClick={handleAddToCart}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            Add to Cart
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   );

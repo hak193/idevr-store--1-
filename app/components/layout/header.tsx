@@ -23,6 +23,7 @@ const authenticatedNavigation = [
   { name: 'Home', href: '/' },
   { name: 'Products', href: '/products' },
   { name: 'Orders', href: '/orders' },
+  { name: 'Wishlist', href: '/wishlist' },
   { name: 'Services', href: '/services' },
   { name: 'About', href: '/about' },
   { name: 'Contact', href: '/contact' },
